@@ -10,6 +10,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.test_lab_week_12.model.Movie
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.appbar.MaterialToolbar
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collect
 
 class MainActivity : AppCompatActivity() {
 
@@ -42,13 +46,22 @@ class MainActivity : AppCompatActivity() {
             }
         )[MovieViewModel::class.java]
 
-        movieViewModel.popularMovies.observe(this) { movies ->
-            movieAdapter.addMovies(movies)
-        }
-
-        movieViewModel.error.observe(this) { error ->
-            if (error.isNotEmpty()) {
-                Snackbar.make(recyclerView, error, Snackbar.LENGTH_LONG).show()
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    movieViewModel.popularMovies.collect { movies ->
+                        movieAdapter.addMovies(movies)
+                    }
+                }
+                launch {
+                    movieViewModel.error.collect { error ->
+                        if (error.isNotEmpty()) {
+                            Snackbar.make(
+                                recyclerView, error, Snackbar.LENGTH_LONG
+                            ).show()
+                        }
+                    }
+                }
             }
         }
     }

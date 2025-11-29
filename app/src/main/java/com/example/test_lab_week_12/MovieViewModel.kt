@@ -7,7 +7,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.catch // Ensure this is imported
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.map
 import kotlin.collections.emptyList
 
 class MovieViewModel(private val movieRepository: MovieRepository)
@@ -28,6 +29,11 @@ class MovieViewModel(private val movieRepository: MovieRepository)
     private fun fetchPopularMovies() {
         viewModelScope.launch(Dispatchers.IO) {
             movieRepository.fetchMovies()
+                // IMPLEMENT DATA FILTERING
+                .map { movieList ->
+                    // Sort the list of movies by 'popularity' in descending order
+                    movieList.sortedByDescending { it.popularity }
+                }
                 .catch { exception ->
                     _error.value = "An exception occurred: ${exception.message}"
                 }

@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.widget.ImageView
 import android.widget.TextView
 import com.bumptech.glide.Glide
+import com.google.android.material.appbar.MaterialToolbar
 
 class DetailsActivity : AppCompatActivity() {
 
@@ -20,6 +21,14 @@ class DetailsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_details)
 
+        // ====== SETUP TOOLBAR + BACK ======
+        val toolbar: MaterialToolbar = findViewById(R.id.details_toolbar)
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
+        toolbar.setNavigationOnClickListener { finish() }
+        // ==================================
+
         val titleText: TextView = findViewById(R.id.title_text)
         val releaseText: TextView = findViewById(R.id.release_text)
         val overviewText: TextView = findViewById(R.id.overview_text)
@@ -34,11 +43,9 @@ class DetailsActivity : AppCompatActivity() {
             getString(R.string.movie_overview, extras?.getString(EXTRA_OVERVIEW).orEmpty())
 
         val posterPath = extras?.getString(EXTRA_POSTER).orEmpty()
-        Glide.with(this@DetailsActivity)
+        Glide.with(this)
             .load("$IMAGE_URL$posterPath")
             .placeholder(R.mipmap.ic_launcher)
-            .fitCenter()
             .into(poster)
-
     }
 }

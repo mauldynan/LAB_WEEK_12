@@ -1,12 +1,18 @@
 package com.example.test_lab_week_12
 
+import androidx.lifecycle.Lifecycle
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.example.test_lab_week_12.model.Movie
+import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.appbar.MaterialToolbar
 
 class MainActivity : AppCompatActivity() {
+
     private val movieAdapter by lazy {
         MovieAdapter(object : MovieAdapter.MovieClickListener {
             override fun onMovieClick(movie: Movie) {
@@ -19,8 +25,32 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        val toolbar: MaterialToolbar = findViewById(R.id.toolbar)
+        setSupportActionBar(toolbar)
+
         val recyclerView: RecyclerView = findViewById(R.id.movie_list)
         recyclerView.adapter = movieAdapter
+
+        val movieRepository = (application as MovieApplication).movieRepository
+
+        val movieViewModel = ViewModelProvider(
+            this,
+            object : ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    return MovieViewModel(movieRepository) as T
+                }
+            }
+        )[MovieViewModel::class.java]
+
+        movieViewModel.popularMovies.observe(this) { movies ->
+            movieAdapter.addMovies(movies)
+        }
+
+        movieViewModel.error.observe(this) { error ->
+            if (error.isNotEmpty()) {
+                Snackbar.make(recyclerView, error, Snackbar.LENGTH_LONG).show()
+            }
+        }
     }
 
     private fun openMovieDetails(movie: Movie) {
